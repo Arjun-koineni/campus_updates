@@ -80,6 +80,13 @@ export default function NewPostPage() {
         <div style={{ textAlign: 'center' }}>
           <div className="loading-spinner" />
           <p className="muted" style={{ marginTop: 16 }}>Loading admin tools…</p>
+          <button
+            className="button button-secondary"
+            style={{ marginTop: 16 }}
+            onClick={() => navigateTo('/dashboard')}
+          >
+            ← Back to Dashboard
+          </button>
         </div>
       </main>
     );

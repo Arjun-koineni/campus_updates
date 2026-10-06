@@ -12,6 +12,15 @@ export const mockUser: User = {
   active: true,
 };
 
+export const mockUsers: User[] = [
+  mockUser,
+  { id: 'usr-stud-001', rollNo: '23116580', name: 'Rapaka Rohith', role: 'STUDENT', email: 'rohith@example.edu', year: '2', branch: 'CSE', section: 'S01', active: true },
+  { id: 'usr-stud-002', rollNo: '23116581', name: 'Nimmanagoti Karthik', role: 'STUDENT', email: 'karthik@example.edu', year: '2', branch: 'CSE', section: 'S02', active: true },
+  { id: 'usr-stud-003', rollNo: '23116582', name: 'Kosaraju Spandana', role: 'STUDENT', email: 'spandana@example.edu', year: '2', branch: 'ECE', section: 'S03', active: true },
+  { id: 'usr-stud-004', rollNo: '23116583', name: 'Aarav Sharma', role: 'STUDENT', email: 'aarav@example.edu', year: '2', branch: 'CSE', section: 'S01', active: true },
+  { id: 'usr-stud-005', rollNo: '23116584', name: 'Meera Iyer', role: 'STUDENT', email: 'meera@example.edu', year: '2', branch: 'CSE', section: 'S02', active: true },
+];
+
 export const mockCategories: Category[] = [
   { id: 'cat-hackathons', name: 'Hackathons', type: 'DEADLINE', sortOrder: 0 },
   { id: 'cat-announcements', name: 'Announcements', type: 'NOTICE', sortOrder: 1 },

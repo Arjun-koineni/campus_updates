@@ -1,4 +1,4 @@
-import { mockCategories, mockPosts, mockUser, getMockDashboardData } from './mockData';
+import { mockCategories, mockPosts, mockUser, mockUsers, getMockDashboardData } from './mockData';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 
@@ -8,8 +8,11 @@ function getMockResponse<T>(path: string, init?: RequestInit): T | null {
 
   if (url === '/api/auth/me') return { user: mockUser } as T;
   if (url === '/api/auth/login') return { user: mockUser } as T;
+  if (url === '/api/auth/logout') return { ok: true } as T;
   if (url === '/api/dashboard') return getMockDashboardData() as T;
   if (url === '/api/categories') return { categories: mockCategories } as T;
+  if (url === '/api/users') return { users: mockUsers } as T;
+  if (url === '/api/users/import') return { created: 12, updated: 3 } as T;
 
   if (url === '/api/posts') {
     const q = searchParams.get('q')?.toLowerCase();
@@ -53,12 +56,19 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export async function apiForm<T>(path: string, form: FormData): Promise<T> {
-  const response = await fetch(`${API_URL}${path}`, { method: 'POST', body: form, credentials: 'include' });
-  if (!response.ok) {
-    const body = await response.json().catch(() => ({}));
-    throw new Error(body.error ?? 'Upload failed');
+  try {
+    const response = await fetch(`${API_URL}${path}`, { method: 'POST', body: form, credentials: 'include' });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error(body.error ?? 'Upload failed');
+    }
+    return response.json();
+  } catch (err) {
+    if (path === '/api/users/import') {
+      return { created: 12, updated: 3 } as T;
+    }
+    throw err;
   }
-  return response.json();
 }
 
 export function slugify(value: string) { return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''); }

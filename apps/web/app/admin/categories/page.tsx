@@ -96,6 +96,13 @@ export default function AdminCategoriesPage() {
         <div style={{ textAlign: 'center' }}>
           <div className="loading-spinner" />
           <p className="muted" style={{ marginTop: 16 }}>{error || 'Loading categories…'}</p>
+          <button
+            className="button button-secondary"
+            style={{ marginTop: 16 }}
+            onClick={() => navigateTo('/dashboard')}
+          >
+            ← Back to Dashboard
+          </button>
         </div>
       </main>
     );
