@@ -5,12 +5,14 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '../../lib/api';
 import { usePageTransition } from '../../lib/usePageTransition';
+import { useTheme } from '../../lib/useTheme';
 
 type Mode = 'login' | 'setup' | 'forgot' | 'reset';
 
 export default function LoginPage() {
   const router = useRouter();
   const { navigateTo, TransitionOverlay } = usePageTransition();
+  const { theme, toggleTheme } = useTheme();
 
   const [mode, setMode] = useState<Mode>('login');
   const [rollNo, setRollNo] = useState('');
@@ -96,6 +98,15 @@ export default function LoginPage() {
     <>
       <TransitionOverlay />
       <main className="login-page">
+        <button
+          type="button"
+          className="floating-theme-toggle"
+          onClick={toggleTheme}
+          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'bright'} mode`}
+          title={`Switch to ${theme === 'light' ? 'dark' : 'bright'} mode`}
+        >
+          <span>{theme === 'light' ? '🌙 Dark Mode' : '☀️ Bright Mode'}</span>
+        </button>
         <div className="login-card page-enter">
           <div className="login-brand">
             <div className="brand" style={{ marginBottom: 8 }}>
@@ -180,11 +191,18 @@ export default function LoginPage() {
             </button>
 
             {mode === 'login' && (
-              <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '2px 0' }}>
+                  <div style={{ height: 1, flex: 1, background: 'var(--line)' }} />
+                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.6px', color: 'var(--muted)', textTransform: 'uppercase' }}>
+                    Quick Demo Access
+                  </span>
+                  <div style={{ height: 1, flex: 1, background: 'var(--line)' }} />
+                </div>
                 <button
                   type="button"
-                  className="button button-secondary"
-                  style={{ width: '100%', background: 'linear-gradient(135deg, rgba(56, 217, 169, 0.15), rgba(51, 154, 240, 0.15))' }}
+                  className="button btn-student"
+                  style={{ width: '100%', height: 46 }}
                   onClick={async () => {
                     await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ rollNo: '23116580', password: 'pass' }) });
                     navigateTo('/dashboard');
@@ -194,8 +212,8 @@ export default function LoginPage() {
                 </button>
                 <button
                   type="button"
-                  className="button button-secondary"
-                  style={{ width: '100%', background: 'linear-gradient(135deg, rgba(132, 94, 247, 0.15), rgba(255, 107, 107, 0.15))' }}
+                  className="button btn-admin"
+                  style={{ width: '100%', height: 46 }}
                   onClick={async () => {
                     await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ rollNo: 'ADMIN001', password: 'pass' }) });
                     navigateTo('/dashboard');

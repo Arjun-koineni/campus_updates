@@ -6,6 +6,8 @@ import { api, slugify } from '../lib/api';
 import type { User, Category } from '../lib/types';
 import { mockCategories } from '../lib/mockData';
 
+import { useTheme } from '../lib/useTheme';
+
 interface TopBarProps {
   user: User;
   onMenu?: () => void;
@@ -14,6 +16,7 @@ interface TopBarProps {
 
 export default function TopBar({ user, onMenu, navigateTo }: TopBarProps) {
   const router = useRouter();
+  const { theme, toggleTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>(mockCategories);
 
@@ -65,6 +68,14 @@ export default function TopBar({ user, onMenu, navigateTo }: TopBarProps) {
         </a>
 
         <div className="top-actions">
+          <button
+            className="icon-button theme-toggle-btn"
+            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'bright'} mode`}
+            title={`Switch to ${theme === 'light' ? 'dark' : 'bright'} mode`}
+            onClick={toggleTheme}
+          >
+            {theme === 'light' ? '🌙' : '☀️'}
+          </button>
           <button className="icon-button" aria-label="Notifications" onClick={() => handleNav('/dashboard')}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -109,6 +120,30 @@ export default function TopBar({ user, onMenu, navigateTo }: TopBarProps) {
                 <span className="drawer-user-sub">
                   {user.rollNo} • {user.role === 'ADMIN' ? 'Admin ⚡' : 'Student 🎓'}
                 </span>
+              </div>
+            </div>
+
+            {/* Bright & Dark Mode Switcher */}
+            <div className="drawer-theme-card">
+              <div className="drawer-theme-label">
+                <span>{theme === 'light' ? '☀️' : '🌙'}</span>
+                <span>Theme</span>
+              </div>
+              <div className="theme-segmented-control">
+                <button
+                  type="button"
+                  className={`theme-segment-btn ${theme === 'light' ? 'active' : ''}`}
+                  onClick={() => { if (theme !== 'light') toggleTheme(); }}
+                >
+                  ☀️ Bright
+                </button>
+                <button
+                  type="button"
+                  className={`theme-segment-btn ${theme === 'dark' ? 'active' : ''}`}
+                  onClick={() => { if (theme !== 'dark') toggleTheme(); }}
+                >
+                  🌙 Dark
+                </button>
               </div>
             </div>
 
