@@ -1,37 +1,52 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
 /**
  * Custom hook that observes elements with `.scroll-reveal` and `.scroll-zoom`
  * classes, adding `.visible` when they enter the viewport.
- * Also handles staggered children automatically.
+ * Uses MutationObserver so asynchronously loaded posts and pages are automatically animated.
  */
 export function useScrollAnimations() {
-  const observerRef = useRef<IntersectionObserver | null>(null);
-
   useEffect(() => {
-    const elements = document.querySelectorAll('.scroll-reveal, .scroll-zoom');
-
-    observerRef.current = new IntersectionObserver(
+    const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add('visible');
-            observerRef.current?.unobserve(entry.target);
+            observer.unobserve(entry.target);
           }
         });
       },
       {
-        threshold: 0.1,
-        rootMargin: '0px 0px -40px 0px',
+        threshold: 0.05,
+        rootMargin: '50px',
       }
     );
 
-    elements.forEach((el) => observerRef.current?.observe(el));
+    const scanAndObserve = () => {
+      const elements = document.querySelectorAll('.scroll-reveal:not(.visible), .scroll-zoom:not(.visible)');
+      elements.forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight + 100 && rect.bottom > -50) {
+          el.classList.add('visible');
+        } else {
+          observer.observe(el);
+        }
+      });
+    };
+
+    scanAndObserve();
+
+    const mutationObserver = new MutationObserver(() => {
+      scanAndObserve();
+    });
+
+    mutationObserver.observe(document.body, { childList: true, subtree: true });
 
     return () => {
-      observerRef.current?.disconnect();
+      observer.disconnect();
+      mutationObserver.disconnect();
     };
   }, []);
 }
