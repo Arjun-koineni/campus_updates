@@ -39,17 +39,17 @@ export default function LoginPage() {
 
     try {
       if (mode === 'login') {
-        const result = await api<{ user: { role: 'STUDENT' | 'ADMIN' } }>('/api/auth/login', {
+        await api<{ user: { role: 'STUDENT' | 'ADMIN' } }>('/api/auth/login', {
           method: 'POST',
           body: JSON.stringify({ rollNo, password }),
         });
-        navigateTo(result.user.role === 'ADMIN' ? '/admin/posts/new' : '/dashboard');
+        navigateTo('/dashboard');
       } else if (mode === 'setup') {
-        const result = await api<{ user: { role: 'STUDENT' | 'ADMIN' } }>('/api/auth/setup-password', {
+        await api<{ user: { role: 'STUDENT' | 'ADMIN' } }>('/api/auth/setup-password', {
           method: 'POST',
           body: JSON.stringify({ rollNo, code, password }),
         });
-        navigateTo(result.user.role === 'ADMIN' ? '/admin/posts/new' : '/dashboard');
+        navigateTo('/dashboard');
       } else if (mode === 'forgot') {
         const result = await api<{ message: string; devToken?: string }>('/api/auth/forgot-password', {
           method: 'POST',
@@ -178,6 +178,17 @@ export default function LoginPage() {
                     ? '📧 Send reset code'
                     : '✅ Continue'}
             </button>
+
+            {mode === 'login' && (
+              <button
+                type="button"
+                className="button button-secondary"
+                style={{ marginTop: 10, width: '100%', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(99, 102, 241, 0.15))' }}
+                onClick={() => navigateTo('/dashboard')}
+              >
+                ✦ Explore Live Campus Updates
+              </button>
+            )}
           </form>
 
           <div className="login-help">
