@@ -249,11 +249,24 @@ export const mockPosts: Post[] = [
 
 export function getMockDashboardData() {
   const pinned = mockPosts.filter((p) => p.pinned);
+
+  // Urgent deadlines in next 48 hours
   const closingSoon = mockPosts.filter(
-    (p) => p.type === 'DEADLINE' && p.deadlineAt && new Date(p.deadlineAt).getTime() - Date.now() < 24 * 3600 * 1000
+    (p) =>
+      p.type === 'DEADLINE' &&
+      p.deadlineAt &&
+      new Date(p.deadlineAt).getTime() - Date.now() <= 48 * 3600 * 1000
   );
-  const pending = mockPosts.filter((p) => p.type === 'DEADLINE');
-  const fresh = mockPosts.slice(0, 6);
+
+  const closingSoonIds = new Set(closingSoon.map((p) => p.id));
+
+  // Upcoming deadlines due later (not in closing soon)
+  const pending = mockPosts.filter(
+    (p) => p.type === 'DEADLINE' && !closingSoonIds.has(p.id)
+  );
+
+  // Informational notices, guidelines, and resource updates
+  const fresh = mockPosts.filter((p) => p.type === 'NOTICE');
 
   return {
     pinned,

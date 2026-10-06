@@ -219,22 +219,30 @@ export default function DashboardPage() {
         </div>
 
         {/* Content Sections */}
-        <Section
-          title="⏰ Closing soon"
-          hint="Deadlines in the next 48 hours"
-          posts={data.closingSoon}
-          href="/category/hackathons"
-        />
-        <Section
-          title="📝 My pending"
-          hint="Remind me later items"
-          posts={data.pending}
-        />
-        <Section
-          title="🆕 New / updated"
-          hint="Since your last visit"
-          posts={data.fresh}
-        />
+        {data.closingSoon.length > 0 && (
+          <Section
+            title="⏰ Urgent — Closing Soon"
+            hint="Deadlines in the next 48 hours"
+            posts={data.closingSoon}
+            href="/category/hackathons"
+          />
+        )}
+        {data.pending.length > 0 && (
+          <Section
+            title="📅 Upcoming Deadlines"
+            hint="Registrations & tasks due later this week"
+            posts={data.pending}
+            href="/category/other-registrations"
+          />
+        )}
+        {data.fresh.length > 0 && (
+          <Section
+            title="📢 Official Notices & Updates"
+            hint="Campus announcements, drives, and resources"
+            posts={data.fresh}
+            href="/category/announcements"
+          />
+        )}
       </main>
     </>
   );
