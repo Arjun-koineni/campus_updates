@@ -46,6 +46,8 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
   app.listen(config.port, () => console.info(`Campus Updates API listening on http://localhost:${config.port}`));
 }
+
+export default app;
