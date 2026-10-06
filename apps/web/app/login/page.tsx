@@ -180,14 +180,30 @@ export default function LoginPage() {
             </button>
 
             {mode === 'login' && (
-              <button
-                type="button"
-                className="button button-secondary"
-                style={{ marginTop: 10, width: '100%', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(99, 102, 241, 0.15))' }}
-                onClick={() => navigateTo('/dashboard')}
-              >
-                ✦ Explore Live Campus Updates
-              </button>
+              <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <button
+                  type="button"
+                  className="button button-secondary"
+                  style={{ width: '100%', background: 'linear-gradient(135deg, rgba(56, 217, 169, 0.15), rgba(51, 154, 240, 0.15))' }}
+                  onClick={async () => {
+                    await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ rollNo: '23116580', password: 'pass' }) });
+                    navigateTo('/dashboard');
+                  }}
+                >
+                  🎓 Log in as Student (23116580)
+                </button>
+                <button
+                  type="button"
+                  className="button button-secondary"
+                  style={{ width: '100%', background: 'linear-gradient(135deg, rgba(132, 94, 247, 0.15), rgba(255, 107, 107, 0.15))' }}
+                  onClick={async () => {
+                    await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ rollNo: 'ADMIN001', password: 'pass' }) });
+                    navigateTo('/dashboard');
+                  }}
+                >
+                  👑 Log in as Admin (ADMIN001)
+                </button>
+              </div>
             )}
           </form>
 

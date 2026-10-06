@@ -2,13 +2,70 @@ import { mockCategories, mockPosts, mockUser, mockUsers, getMockDashboardData } 
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 
+import type { User } from './types';
+
+function getActiveUser(): User {
+  if (typeof window !== 'undefined') {
+    const stored = localStorage.getItem('campus_active_user');
+    if (stored) {
+      try { return JSON.parse(stored); } catch {}
+    }
+  }
+  return mockUser;
+}
+
+function setActiveUser(u: User) {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('campus_active_user', JSON.stringify(u));
+  }
+}
+
+function clearActiveUser() {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('campus_active_user');
+  }
+}
+
 function getMockResponse<T>(path: string, init?: RequestInit): T | null {
   const url = path.split('?')[0];
   const searchParams = new URLSearchParams(path.includes('?') ? path.split('?')[1] : '');
 
-  if (url === '/api/auth/me') return { user: mockUser } as T;
-  if (url === '/api/auth/login') return { user: mockUser } as T;
-  if (url === '/api/auth/logout') return { ok: true } as T;
+  if (url === '/api/auth/me') return { user: getActiveUser() } as T;
+
+  if (url === '/api/auth/login') {
+    let roll = 'ADMIN001';
+    try {
+      if (init?.body) {
+        const body = JSON.parse(init.body as string);
+        if (body.rollNo) roll = String(body.rollNo).trim();
+      }
+    } catch {}
+
+    const matched = mockUsers.find(
+      (u) => u.rollNo.toLowerCase() === roll.toLowerCase()
+    );
+
+    const activeUser: User = matched ?? (roll.toUpperCase().startsWith('ADMIN') ? mockUser : {
+      id: `usr-${roll}`,
+      rollNo: roll,
+      name: 'Student User',
+      role: 'STUDENT',
+      email: `${roll.toLowerCase()}@example.edu`,
+      year: '2',
+      branch: 'CSE',
+      section: 'S01',
+      active: true,
+    });
+
+    setActiveUser(activeUser);
+    return { user: activeUser } as T;
+  }
+
+  if (url === '/api/auth/logout') {
+    clearActiveUser();
+    return { ok: true } as T;
+  }
+
   if (url === '/api/dashboard') return getMockDashboardData() as T;
   if (url === '/api/categories') return { categories: mockCategories } as T;
   if (url === '/api/users') return { users: mockUsers } as T;
