@@ -1,0 +1,218 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+enum CategoryType {
+  DEADLINE
+  NOTICE
+}
+
+enum PostType {
+  DEADLINE
+  NOTICE
+}
+
+enum PostStatus {
+  ACTIVE
+  EXPIRED
+  ARCHIVED
+}
+
+enum Priority {
+  NORMAL
+  CRITICAL
+}
+
+enum AudienceType {
+  ALL
+  YEAR
+  BRANCH
+  SECTION
+}
+
+enum RegistrationStatus {
+  DONE
+  REMIND_LATER
+}
+
+enum ReminderChannel {
+  EMAIL
+  PUSH
+}
+
+model User {
+  id                 String              @id @default(uuid()) @db.Uuid
+  rollNo             String              @unique @map("roll_no")
+  name               String
+  email              String              @unique
+  passwordHash       String?             @map("password_hash")
+  role               Role                @default(STUDENT)
+  year               String?
+  branch             String?
+  section            String?
+  active             Boolean             @default(true)
+  firstLoginRequired Boolean             @default(true) @map("first_login_required")
+  failedLoginCount   Int                 @default(0) @map("failed_login_count")
+  lockedUntil        DateTime?           @map("locked_until") @db.Timestamptz(3)
+  lastLoginAt        DateTime?           @map("last_login_at") @db.Timestamptz(3)
+  lastVisitAt        DateTime?           @map("last_visit_at") @db.Timestamptz(3)
+  sessionVersion     Int                 @default(0) @map("session_version")
+  createdAt          DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+  createdPosts       Post[]              @relation("post_created_by")
+  updatedPosts       Post[]              @relation("post_updated_by")
+  registrations      Registration[]
+  notificationsRead  NotificationRead[]
+  reminders          Reminder[]
+  auditEntries       AuditLog[]
+  historyEntries     PostHistory[]
+  authTokens         AuthToken[]
+}
+
+model Category {
+  id        String       @id @default(uuid()) @db.Uuid
+  name      String
+  sortOrder Int          @default(0) @map("order")
+  type      CategoryType
+  active    Boolean      @default(true)
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+  posts     Post[]
+
+  @@index([sortOrder])
+}
+
+model Post {
+  id           String        @id @default(uuid()) @db.Uuid
+  categoryId   String        @map("category_id") @db.Uuid
+  type         PostType
+  title        String
+  summary      String
+  source       String?
+  link         String?
+  attachmentUrl String?      @map("attachment_url")
+  fees         String?
+  deadlineAt   DateTime?     @map("deadline_at") @db.Timestamptz(3)
+  validUntil   DateTime?     @map("valid_until") @db.Timestamptz(3)
+  pinned       Boolean       @default(false)
+  priority     Priority      @default(NORMAL)
+  audienceType AudienceType  @default(ALL) @map("audience_type")
+  audienceValue String?      @map("audience_value")
+  status       PostStatus    @default(ACTIVE)
+  archivedAt   DateTime?     @map("archived_at") @db.Timestamptz(3)
+  createdById  String        @map("created_by") @db.Uuid
+  updatedById  String?       @map("updated_by") @db.Uuid
+  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  category     Category      @relation(fields: [categoryId], references: [id])
+  createdBy    User          @relation("post_created_by", fields: [createdById], references: [id])
+  updatedBy    User?         @relation("post_updated_by", fields: [updatedById], references: [id])
+  registrations Registration[]
+  notifications Notification[]
+  reminders     Reminder[]
+  history       PostHistory[]
+
+  @@index([categoryId, status])
+  @@index([deadlineAt, status])
+  @@index([validUntil, status])
+  @@index([pinned, status])
+}
+
+model Registration {
+  id        String             @id @default(uuid()) @db.Uuid
+  userId    String             @map("user_id") @db.Uuid
+  postId    String             @map("post_id") @db.Uuid
+  status    RegistrationStatus
+  remindAt  DateTime?          @map("remind_at") @db.Timestamptz(3)
+  createdAt DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user      User               @relation(fields: [userId], references: [id])
+  post      Post               @relation(fields: [postId], references: [id])
+
+  @@unique([userId, postId])
+  @@index([userId, status])
+}
+
+model Notification {
+  id        String             @id @default(uuid()) @db.Uuid
+  postId    String?            @map("post_id") @db.Uuid
+  title     String
+  content   String
+  createdAt DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  post      Post?              @relation(fields: [postId], references: [id])
+  reads     NotificationRead[]
+}
+
+model NotificationRead {
+  id             String       @id @default(uuid()) @db.Uuid
+  userId         String       @map("user_id") @db.Uuid
+  notificationId String       @map("notification_id") @db.Uuid
+  readAt         DateTime     @default(now()) @map("read_at") @db.Timestamptz(3)
+  user           User         @relation(fields: [userId], references: [id])
+  notification   Notification @relation(fields: [notificationId], references: [id])
+
+  @@unique([userId, notificationId])
+}
+
+model Reminder {
+  id        String          @id @default(uuid()) @db.Uuid
+  userId    String          @map("user_id") @db.Uuid
+  postId    String          @map("post_id") @db.Uuid
+  sendAt    DateTime        @map("send_at") @db.Timestamptz(3)
+  channel   ReminderChannel
+  sent      Boolean         @default(false)
+  createdAt DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  user      User            @relation(fields: [userId], references: [id])
+  post      Post            @relation(fields: [postId], references: [id])
+
+  @@index([sendAt, sent])
+}
+
+model AuthToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  tokenHash String   @map("token_hash")
+  purpose   String
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(3)
+  usedAt    DateTime? @map("used_at") @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, purpose, expiresAt])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  actorId    String   @map("actor_id") @db.Uuid
+  action     String
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  details    Json?
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  actor      User     @relation(fields: [actorId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+model PostHistory {
+  id        String   @id @default(uuid()) @db.Uuid
+  postId    String   @map("post_id") @db.Uuid
+  changedBy String   @map("changed_by") @db.Uuid
+  snapshot  Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  post      Post     @relation(fields: [postId], references: [id])
+  user      User     @relation(fields: [changedBy], references: [id])
+
+  @@index([postId, createdAt])
+}

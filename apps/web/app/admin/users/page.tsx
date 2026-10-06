@@ -1,0 +1,15 @@
+'use client';
+
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { api, apiForm } from '../../../lib/api';
+import type { User } from '../../../lib/types';
+import TopBar from '../../../components/TopBar';
+
+export default function AdminUsersPage() {
+  const [user, setUser] = useState<User | null>(null); const [file, setFile] = useState<File | null>(null); const [users, setUsers] = useState<User[]>([]); const [message, setMessage] = useState(''); const [error, setError] = useState('');
+  useEffect(() => { Promise.all([api<{ user: User }>('/api/auth/me'), api<{ users: User[] }>('/api/users')]).then(([me, result]) => { if (me.user.role !== 'ADMIN') throw new Error('Admin access required'); setUser(me.user); setUsers(result.users); }).catch((err) => setError(err.message)); }, []);
+  async function upload(event: React.FormEvent) { event.preventDefault(); if (!file) return; setError(''); setMessage(''); const form = new FormData(); form.append('file', file); try { const result = await apiForm<{ created: number; updated: number }>('/api/users/import', form); setMessage(`${result.created} accounts created, ${result.updated} updated.`); } catch (err) { setError(err instanceof Error ? err.message : 'Import failed'); } }
+  if (!user) return <main className="login-page"><p className="muted">{error || 'Loading users…'}</p></main>;
+  return <><TopBar user={user} /><main className="shell"><div className="page-heading"><div><Link href="/dashboard" className="back-link">← Dashboard</Link><h1>Student accounts</h1><p className="muted">Importing an existing roll number updates its profile and reactivates it.</p></div></div><div className="grid-two"><form className="form-card form-grid" onSubmit={upload}><h2>Import student list</h2><p className="muted">CSV columns: roll_no, name, email, year, branch, section</p><div className="field"><label htmlFor="student-file">CSV file</label><input id="student-file" type="file" accept=".csv,text/csv" onChange={(e) => setFile(e.target.files?.[0] ?? null)} required /></div>{error && <p className="error">{error}</p>}{message && <p className="success">{message}</p>}<button className="button">Import list</button></form><section className="admin-card"><h2>{users.length} accounts</h2><div className="user-list">{users.slice(0, 12).map((item) => <div className="user-row" key={item.id}><div><strong>{item.name}</strong><span>{item.rollNo} · {item.branch ?? 'Branch not set'}</span></div><span className={item.active ? 'status-active' : 'status-inactive'}>{item.active ? 'Active' : 'Inactive'}</span></div>)}</div></section></div></main></>;
+}

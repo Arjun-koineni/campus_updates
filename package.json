@@ -1,0 +1,17 @@
+{
+  "name": "campus-updates",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": ["apps/api", "apps/web"],
+  "scripts": {
+    "dev": "concurrently -k \"npm run dev --workspace @campus/api\" \"npm run worker --workspace @campus/api\" \"npm run dev --workspace @campus/web\"",
+    "build": "npm run build --workspace @campus/api && npm run build --workspace @campus/web",
+    "test": "npm run test --workspace @campus/api",
+    "db:generate": "npm run prisma:generate --workspace @campus/api",
+    "db:migrate": "npm run prisma:migrate --workspace @campus/api",
+    "db:seed": "npm run prisma:seed --workspace @campus/api"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

@@ -1,0 +1,3 @@
+export type User = { id: string; rollNo: string; name: string; role: 'STUDENT' | 'ADMIN'; active?: boolean; email?: string; year?: string | null; branch?: string | null; section?: string | null };
+export type Category = { id: string; name: string; type: 'DEADLINE' | 'NOTICE'; sortOrder: number };
+export type Post = { id: string; categoryId: string; type: 'DEADLINE' | 'NOTICE'; title: string; summary: string; source?: string | null; link?: string | null; attachmentUrl?: string | null; fees?: string | null; deadlineAt?: string | null; validUntil?: string | null; pinned: boolean; priority: 'NORMAL' | 'CRITICAL'; status: 'ACTIVE' | 'EXPIRED' | 'ARCHIVED'; category: Category; createdAt: string; updatedAt: string };
