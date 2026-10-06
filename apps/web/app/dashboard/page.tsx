@@ -77,43 +77,7 @@ export default function DashboardPage() {
   return (
     <>
       <TransitionOverlay />
-      <TopBar user={user} onMenu={() => setMenu(!menu)} navigateTo={navigateTo} />
-
-      {/* Mobile Menu */}
-      {menu && (
-        <>
-          <div className="mobile-menu-backdrop" onClick={() => setMenu(false)} />
-          <aside className="mobile-menu">
-            <div className="menu-header">
-              <strong style={{ fontSize: 16 }}>Explore</strong>
-              <button className="icon-button" onClick={() => setMenu(false)} aria-label="Close menu">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
-            </div>
-            {data.categories.map((category) => (
-              <a
-                key={category.id}
-                onClick={() => { setMenu(false); navigateTo(`/category/${slugify(category.name)}`); }}
-                style={{ cursor: 'pointer' }}
-              >
-                {category.type === 'DEADLINE' ? '🎯' : '📋'} {category.name}
-              </a>
-            ))}
-            {user.role === 'ADMIN' && (
-              <a
-                onClick={() => { setMenu(false); navigateTo('/admin/posts/new'); }}
-                className="admin-pill"
-                style={{ cursor: 'pointer', marginTop: 12 }}
-              >
-                + Create post
-              </a>
-            )}
-          </aside>
-        </>
-      )}
+      <TopBar user={user} navigateTo={navigateTo} />
 
       <main className="shell page-enter">
         {/* Welcome Section */}
